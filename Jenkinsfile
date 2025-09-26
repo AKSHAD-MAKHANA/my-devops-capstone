@@ -1,16 +1,39 @@
 pipeline {
     agent any
+
     stages {
-        stage('Build Docker Image') {
+        stage('Checkout') {
             steps {
-                sh 'docker build -t mydockerapp .'
+                git branch: 'main', url: 'https://github.com/AKSHAD-MAKHANA/my-devops-capstone.git'
             }
         }
-        stage('Run Docker Container') {
+
+        stage('Build Docker Image') {
             steps {
-                sh 'docker rm -f capstone-app || true'
-                sh 'docker run -d -p 8081:80 --name capstone-app mydockerapp'
+                script {
+                    sh 'docker build -t mydockerapp .'
+                }
+            }
+        }
+
+        stage('Run Container') {
+            steps {
+                script {
+                    // Stop old container if running
+                    sh 'docker rm -f capstone-app || true'
+                    // Run new container
+                    sh 'docker run -d -p 8081:80 --name capstone-app mydockerapp'
+                }
+            }
+        }
+
+        stage('Verify') {
+            steps {
+                script {
+                    sh 'curl -s http://localhost:8081'
+                }
             }
         }
     }
 }
+
